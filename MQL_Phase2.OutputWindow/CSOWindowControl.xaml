@@ -1,0 +1,43 @@
+﻿<UserControl x:Class="MQL_Phase2.OutputWindow.CSOWindowControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             Background="{DynamicResource VsBrush.Window}"
+             Foreground="{DynamicResource VsBrush.WindowText}"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300"
+             Name="MyToolWindow">
+    <Grid Initialized="Grid_Initialized">
+        <DockPanel>
+            <TabControl x:Name="tabControl" Height="{Binding Path=d:DesignHeight, ElementName=MyToolWindow}" Width="{Binding Path=d:DesignWidth, ElementName=MyToolWindow}">
+                <TabItem x:Name="summaryTabItem" Header="Total Summary">
+                    <Grid Background="#FFE5E5E5">
+                        <DataGrid x:Name="summaryGrid" IsReadOnly="true" MouseDoubleClick="summaryGrid_MouseDoubleClick" SelectionChanged="summaryGrid_SelectionChanged">
+                            <DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="_Refresh" Name="refreshSummaryMenuItem"/>
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}" Header="File"/>
+                                <DataGridTextColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}" Header="Total Code Smells"/>
+                                <DataGridTextColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}" Header="Lines Represented"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+                <TabItem x:Name="specificsTabItem" Header="Specifics">
+                    <Grid Background="#FFE5E5E5">
+                        <DataGrid x:Name="specificGrid" IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}" Header="Type"/>
+                                <DataGridTextColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}" Header="Total"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+        </DockPanel>
+    </Grid>
+</UserControl>
