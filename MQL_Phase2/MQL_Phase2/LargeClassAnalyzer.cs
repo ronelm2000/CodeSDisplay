@@ -36,7 +36,14 @@ namespace DiagnosticAnalyzerAndCodeFix
             // TODO: Consider registering other actions that act on syntax instead of or in addition to symbols
             // context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
             context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.ClassDeclaration);
-            Debug.WriteLine("Registered Action!");
+            context.RegisterCompilationStartAction((x) =>
+            {
+                Summary.Results.Clear(x.Compilation.AssemblyName, CodeSmellType.LargeClass);
+            });
+            context.RegisterCompilationAction((x) =>
+            {
+                Summary.Results.Update();
+            });
         }
 
         // each node represents a method.
@@ -52,7 +59,7 @@ namespace DiagnosticAnalyzerAndCodeFix
             var all_classes = (from n in all_c_sharp_files select n.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>()).SelectMany(x => x);
 
             // Find Large Class
-            float rating = Math.Max(this_class.SyntaxTree.Length - 500, 0);
+            float rating = Math.Max(this_class.FullSpan.Length - this_class.DescendantTrivia().Select(x=>x.Span.Length).Sum() - 500, 0);
             rating -= 500;
             rating /= 20000;
             /*
@@ -86,9 +93,10 @@ namespace DiagnosticAnalyzerAndCodeFix
                     context.Node.SyntaxTree.FilePath,
                     context.Compilation.AssemblyName,
                     new CodeSmellSummary(
-                        CodeSmellSummary.CodeSmellType.LargeClass,
+                        CodeSmellType.LargeClass,
                         context.Node.DescendantTokens().First((x) => x.IsKind(SyntaxKind.IdentifierToken)).GetLocation(),
-                        context.Node
+                        context.Node,
+                        context.Node.GetLocation().GetLines().ToArray()
                         )
                 );
             }

@@ -36,7 +36,14 @@ namespace MQL_Phase2
             // TODO: Consider registering other actions that act on syntax instead of or in addition to symbols
             // context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
             context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.Block);
-            Debug.WriteLine("Registered Action!");
+            context.RegisterCompilationStartAction((x) =>
+            {
+                Summary.Results.Clear(x.Compilation.AssemblyName, CodeSmellType.DuplicateCode);
+            });
+            context.RegisterCompilationAction((x) =>
+            {
+                Summary.Results.Update();
+            });
         }
 
         // each node represents a method.
@@ -114,9 +121,10 @@ namespace MQL_Phase2
                         context.Node.SyntaxTree.FilePath,
                         context.Compilation.AssemblyName,
                         new CodeSmellSummary(
-                            CodeSmellSummary.CodeSmellType.DuplicateCode,
+                            CodeSmellType.DuplicateCode,
                             context.Node.HighlightOneLine(),
-                            context.Node
+                            context.Node,
+                            context.Node.GetLocation().GetLines().ToArray()
                             )
                     );
                 } catch (Exception e)

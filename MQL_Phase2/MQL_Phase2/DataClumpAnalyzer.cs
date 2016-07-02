@@ -36,7 +36,7 @@ namespace MQL_Phase2
             context.RegisterSyntaxNodeAction(DetectDataClumps, SyntaxKind.MethodDeclaration);
             context.RegisterCompilationStartAction((x) =>
             {
-                Summary.Results.Clear(x.Compilation.AssemblyName);
+                Summary.Results.Clear(x.Compilation.AssemblyName, CodeSmellType.DataClump);
             });
             context.RegisterCompilationAction((x) =>
             {
@@ -69,9 +69,10 @@ namespace MQL_Phase2
                     context.Node.SyntaxTree.FilePath, 
                     context.Compilation.AssemblyName,
                     new CodeSmellSummary(
-                        CodeSmellSummary.CodeSmellType.DataClump, 
+                        CodeSmellType.DataClump, 
                         context.Node.DescendantTokens().First((x) => x.IsKind(SyntaxKind.IdentifierToken)).GetLocation(),
-                        context.Node
+                        context.Node,
+                        context.Node.GetLocation().GetLines().ToArray()
                         )
                 );
             }

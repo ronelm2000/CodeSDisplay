@@ -204,7 +204,7 @@ namespace MQL_Phase2
                 );
 
             return node.GetLocation();
-            // Would cover ridiculously everything and anything C# were to add in the future
+            // Would cover ridiculously everything and anything C# were to add in the future. ~.~
             /*
             if (node is IBlockKeywordStatementSyntax) return Location.Create(
                 node.SyntaxTree,
@@ -222,22 +222,20 @@ namespace MQL_Phase2
             return str.Substring(str.LastIndexOf('\\') + 1);
         }
 
+        public static IEnumerable<int> GetLines(this Location loc)
+        {
+            var start_line = loc.GetLineSpan().StartLinePosition.Line;
+            var end_line = loc.GetLineSpan().EndLinePosition.Line;
+            for (int i = 0; i <= end_line - start_line; i++) yield return start_line + i;
+            /*
+            return loc.SourceTree.GetRoot()
+                .DescendantNodes()
+                .Where((x) => x.Span.IntersectsWith(loc.SourceSpan))
+                .Select((x) => x.GetLocation().GetMappedLineSpan().StartLinePosition.Line);
+                */
+            
+        }
+
     }
 
-    /// <summary>
-    /// Matches IfStatementSyntax, ForStatementSyntax, ForEachStatementSyntax, WhileStatementSyntax, 
-    /// DoStatementSyntax, UsingStatementSyntax, ElseStatement, CatchStatement, CaseSwitchLabelSyntax,
-    /// SwitchStatementSyntax, TryStatementSyntax, CatchClauseSyntax, and LockStatementSyntax.
-    /// </summary>
-    interface IBlockKeywordStatementSyntax
-    {
-        SyntaxToken Keyword { get; }
-        SyntaxNode InsideStatement { get; }
-        bool ContainsConditions { get; }
-        SyntaxToken OpenParenthesis { get; }
-        SyntaxToken CloseParenthesis { get; }
-        SyntaxList<SyntaxNode> ConditionStatements { get; }
-        bool ContainsAdditionalClauses { get; }
-        SyntaxList<T> ListOtherClauses<T>() where T : SyntaxNode;
-    }
 }

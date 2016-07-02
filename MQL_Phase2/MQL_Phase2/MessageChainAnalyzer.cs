@@ -36,7 +36,14 @@ namespace DiagnosticAnalyzerAndCodeFix
             // TODO: Consider registering other actions that act on syntax instead of or in addition to symbols
             // context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
             context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.MethodDeclaration);
-            Debug.WriteLine("Registered Action!");
+            context.RegisterCompilationStartAction((x) =>
+            {
+                Summary.Results.Clear(x.Compilation.AssemblyName, CodeSmellType.MessageChain);
+            });
+            context.RegisterCompilationAction((x) =>
+            {
+                Summary.Results.Update();
+            });
         }
 
         // each node represents a method.
@@ -49,6 +56,7 @@ namespace DiagnosticAnalyzerAndCodeFix
             // it wasn't clear if invocation includes properties in C# since Java has no properties.
             double rating = 0;
             List<Location> listLocs = new List<Location>();
+            List<SyntaxNode> listNodes = new List<SyntaxNode>();
             List<double> chainSizes = new List<double>();
             foreach (InvocationExpressionSyntax invocation in all_invocations)
             {
@@ -56,6 +64,7 @@ namespace DiagnosticAnalyzerAndCodeFix
                 if (chainSize > 1)
                 {
                     listLocs.Add(invocation.GetLocation());
+                    listNodes.Add(invocation);
                     chainSizes.Add(chainSize);
                     rating += chainSize;
                 }
@@ -72,16 +81,18 @@ namespace DiagnosticAnalyzerAndCodeFix
                 {
                     var diag = Diagnostic.Create(Rule, listLocs[i], rating * 100, chainSizes[i]);
                     context.ReportDiagnostic(diag);
+                    Summary.Results.Add(
+                        context.Node.SyntaxTree.FilePath,
+                        context.Compilation.AssemblyName,
+                        new CodeSmellSummary(
+                            CodeSmellType.MessageChain,
+                            listLocs[i],
+                            listNodes[i],
+                            listNodes[i].GetLocation().GetLines().ToArray()
+                            )
+                    );
                 }
-                Summary.Results.Add(
-                    context.Node.SyntaxTree.FilePath,
-                    context.Compilation.AssemblyName,
-                    new CodeSmellSummary(
-                        CodeSmellSummary.CodeSmellType.MessageChain,
-                        context.Node.GetLocation(),
-                        context.Node
-                        )
-                );
+
             }
             //});
 

@@ -9,14 +9,14 @@
              d:DesignHeight="300" d:DesignWidth="300"
              Name="MyToolWindow">
     <Grid Initialized="Grid_Initialized">
-        <DockPanel>
-            <TabControl x:Name="tabControl" Height="{Binding Path=d:DesignHeight, ElementName=MyToolWindow}" Width="{Binding Path=d:DesignWidth, ElementName=MyToolWindow}">
+        <DockPanel Margin="0,0,0,20">
+            <TabControl x:Name="tabControl" DockPanel.Dock="Top" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <TabItem x:Name="summaryTabItem" Header="Total Summary">
                     <Grid Background="#FFE5E5E5">
-                        <DataGrid x:Name="summaryGrid" IsReadOnly="true" MouseDoubleClick="summaryGrid_MouseDoubleClick" SelectionChanged="summaryGrid_SelectionChanged">
+                        <DataGrid x:Name="summaryGrid" IsReadOnly="true" SelectionChanged="summaryGrid_SelectionChanged" ContextMenuService.IsEnabled="True" ContextMenuService.ShowOnDisabled="True">
                             <DataGrid.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="_Refresh" Name="refreshSummaryMenuItem"/>
+                                    <MenuItem Header="Refresh" Name="refreshSummaryMenuItem"/>
                                 </ContextMenu>
                             </DataGrid.ContextMenu>
                             <DataGrid.Columns>
@@ -29,7 +29,7 @@
                 </TabItem>
                 <TabItem x:Name="specificsTabItem" Header="Specifics">
                     <Grid Background="#FFE5E5E5">
-                        <DataGrid x:Name="specificGrid" IsReadOnly="True">
+                        <DataGrid x:Name="specificGrid" IsReadOnly="True" SelectionChanged="specificGrid_SelectionChanged">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}" Header="Type"/>
                                 <DataGridTextColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}" Header="Total"/>
@@ -37,7 +37,24 @@
                         </DataGrid>
                     </Grid>
                 </TabItem>
+                <TabItem x:Name="lineMapTabItem" Header="Line Mapping">
+                    <Grid Background="#FFE5E5E5">
+                        <DataGrid x:Name="lineMapGrid" IsReadOnly="true" SelectionChanged="summaryGrid_SelectionChanged" ContextMenuService.IsEnabled="True" ContextMenuService.ShowOnDisabled="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}" Header="Type"/>
+                                <DataGridTextColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}" Header="Line #"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
             </TabControl>
+        </DockPanel>
+        <DockPanel Margin="0,280,0,0">
+            <StatusBar DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+                <StatusBarItem>
+                    <TextBlock Name="statusBar" Text="Loading..."/>
+                </StatusBarItem>
+            </StatusBar>
         </DockPanel>
     </Grid>
 </UserControl>

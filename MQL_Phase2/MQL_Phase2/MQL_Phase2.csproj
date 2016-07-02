@@ -64,7 +64,8 @@
       <DependentUpon>SwitchStatementResources.resx</DependentUpon>
     </Compile>
     <Compile Include="InstanceOfAnalyzer.cs" />
-    <Compile Include="Summary\SpecificValues.cs" />
+    <Compile Include="Summary\LineMapValue.cs" />
+    <Compile Include="Summary\SpecificValue.cs" />
     <Compile Include="Summary\Summary.cs" />
     <Compile Include="Summary\TotalValues.cs" />
     <Compile Include="TypeCastAnalyzer.cs" />

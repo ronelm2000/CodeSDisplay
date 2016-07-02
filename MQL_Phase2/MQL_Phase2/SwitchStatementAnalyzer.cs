@@ -37,7 +37,14 @@ namespace DiagnosticAnalyzerAndCodeFix
             // context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
             context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.SwitchStatement);
             context.RegisterSyntaxNodeAction(RatingCompute, SyntaxKind.MethodDeclaration);
-            Debug.WriteLine("Registered Action!");
+            context.RegisterCompilationStartAction((x) =>
+            {
+                Summary.Results.Clear(x.Compilation.AssemblyName, CodeSmellType.SwitchStatement);
+            });
+            context.RegisterCompilationAction((x) =>
+            {
+                Summary.Results.Update();
+            });
         }
 
         // each node represents a method.
@@ -51,9 +58,10 @@ namespace DiagnosticAnalyzerAndCodeFix
                 context.Node.SyntaxTree.FilePath,
                 context.Compilation.AssemblyName,
                 new CodeSmellSummary(
-                    CodeSmellSummary.CodeSmellType.SwitchStatement,
+                    CodeSmellType.SwitchStatement,
                     context.Node.HighlightOneLine(),
-                    context.Node
+                    context.Node,
+                    context.Node.GetLocation().GetLines().ToArray()
                     )
             );
         }

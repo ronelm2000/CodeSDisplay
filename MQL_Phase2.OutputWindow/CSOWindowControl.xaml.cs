@@ -19,8 +19,8 @@ namespace MQL_Phase2.OutputWindow
     /// </summary>
     public partial class CSOWindowControl : UserControl
     {
-        IEnumerable<TotalValues> totalValues;
-        IEnumerable<SpecificValues> specifics;
+        IEnumerable<TotalTableValue> totalValues;
+        IEnumerable<SpecificValue> specifics;
 
         // public ICommand RefreshCommand { get; private set; }
 
@@ -31,8 +31,17 @@ namespace MQL_Phase2.OutputWindow
         {
             this.InitializeComponent();
             Summary.Results.OnUpdate += Results_OnUpdate;
+            Summary.Results.OnStepUpdate += Results_OnStepUpdate;
             refreshSummaryMenuItem.Command = new RelayCommand( (x) => totalValues != null, Command_Refresh);
             
+        }
+
+        private void Results_OnStepUpdate(string filename, CodeSmellSummary summary)
+        {
+            statusBar.Dispatcher.Invoke(() =>
+            {
+                statusBar.Text = "Code Smell Added: " + summary.Type.ToString() + " at " + filename.ShortenAbolutePath() + " in " + summary.Location.GetLineSpan().ToString();
+            });
         }
 
         private void Command_Refresh(object obj)
@@ -40,24 +49,10 @@ namespace MQL_Phase2.OutputWindow
             ReloadTotals();
         }
 
-        /// <summary>
-        /// Handles click on the button by displaying a message box.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
-        [SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions", Justification = "Sample code")]
-        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "Default event handler naming pattern")]
-        private void button1_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show(
-                string.Format(System.Globalization.CultureInfo.CurrentUICulture, "Invoked '{0}'", this.ToString()),
-                "CSOWindow");
-        }
-
         internal void Results_OnUpdate()
         {
             // update the tables; use the UI thread.
-            summaryGrid.Dispatcher.Invoke(ReloadTotals);
+            tabControl.Dispatcher.Invoke(ReloadTotals);
         }
 
         private void button_Click(object sender, RoutedEventArgs e)
@@ -69,6 +64,9 @@ namespace MQL_Phase2.OutputWindow
 
         private void ReloadTotals()
         {
+            summaryGrid.ContextMenu.IsOpen = false;
+            summaryGrid.ContextMenu.InvalidateVisual();
+            summaryGrid.SelectedIndex = -1;
             summaryGrid.Columns.Clear();
             summaryGrid.ItemsSource = null;
             totalValues = Summary.Results.GenerateTotals();
@@ -79,27 +77,45 @@ namespace MQL_Phase2.OutputWindow
                 summaryGrid.Columns[1].Header = "Total Code Smells";
                 summaryGrid.Columns[2].Header = "Lines of Code";
             }
+            summaryGrid.SelectedIndex = -1;
+            summaryGrid.ContextMenu.IsEnabled = true;
+            statusBar.Text = "Ready";
+            specificGrid.ItemsSource = null;
+            lineMapGrid.ItemsSource = null;
+            lineMapTabItem.Header = "Line Mapping";
+            specificsTabItem.Header = "Specifics";
+
         }
 
         private void Grid_Initialized(object sender, EventArgs e)
         {
             ReloadTotals();
         }
-
-        private void summaryGrid_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-        }
+        
 
         private void summaryGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (summaryGrid.SelectedCells.Count > 0)
             {
-                var selectedItem = summaryGrid.SelectedItem as TotalValues;
+                var selectedItem = summaryGrid.SelectedItem as TotalTableValue;
                 specificGrid.Columns.Clear();
                 specifics = Summary.Results.GenerateSpecificTable(selectedItem);
                 specificGrid.ItemsSource = specifics;
                 tabControl.SelectedIndex = 1;
                 specificsTabItem.Header = "Specifics: " + selectedItem.Filename.ShortenAbolutePath();
+            }
+        }
+
+        private void specificGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (specificGrid.SelectedCells.Count > 0 && summaryGrid.SelectedCells.Count > 0)
+            {
+                var selectedSpecific = specificGrid.SelectedItem as SpecificValue;
+                var selectedSummary = summaryGrid.SelectedItem as TotalTableValue;
+                lineMapGrid.Columns.Clear();
+                lineMapGrid.ItemsSource = Summary.Results.GenerateLineMapping(selectedSummary, selectedSpecific);
+                tabControl.SelectedIndex = 2;
+                lineMapTabItem.Header = "Line Map: " + Summary.TypeProper[selectedSpecific.GetCodeSmellType()];
             }
         }
 
